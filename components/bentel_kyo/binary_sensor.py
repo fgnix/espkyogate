@@ -3,7 +3,10 @@ from esphome.components import binary_sensor
 import esphome.codegen as cg
 
 from esphome.const import (
+	DEVICE_CLASS_BATTERY,
 	DEVICE_CLASS_MOTION,
+	DEVICE_CLASS_POWER,
+	DEVICE_CLASS_PROBLEM,
 	DEVICE_CLASS_RUNNING,
 	ENTITY_CATEGORY_DIAGNOSTIC,
 )
@@ -14,6 +17,13 @@ from . import (
 	CONF_PARTITION_ALARM_x,
 	CONF_BENTEL_KYO_ID,
 	CONF_OPERATIONAL,
+	CONF_WARN_AC_POWER_LOSS,
+	CONF_WARN_MISSING_BPI,
+	CONF_WARN_FUSE,
+	CONF_WARN_LOW_BATTERY,
+	CONF_WARN_TELEPHONE_LINE,
+	CONF_WARN_DEFAULT_CODES,
+	CONF_WARN_WIRELESS,
 	CONF_ZONE_x,
 	CONF_ZONE_TAMPER_x,
 	CONF_ZONE_BYPASSED_x,
@@ -23,7 +33,6 @@ from . import (
 )
 
 DEPENDENCIES = ["bentel_kyo"]
-
 
 # Expand to all 32 zones
 ZONES_CONFIG_SCHEMA = (
@@ -76,6 +85,32 @@ CONFIG_SCHEMA = (
 				device_class=DEVICE_CLASS_RUNNING,
 				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
 			),
+
+			# Warnings
+			cv.Optional(CONF_WARN_AC_POWER_LOSS): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_POWER,
+				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+			),
+			cv.Optional(CONF_WARN_MISSING_BPI): binary_sensor.binary_sensor_schema(
+				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+			),
+			cv.Optional(CONF_WARN_FUSE): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_PROBLEM,
+				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+			),
+			cv.Optional(CONF_WARN_LOW_BATTERY): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_BATTERY,
+				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+			),
+			cv.Optional(CONF_WARN_TELEPHONE_LINE): binary_sensor.binary_sensor_schema(
+				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+			),
+			cv.Optional(CONF_WARN_DEFAULT_CODES): binary_sensor.binary_sensor_schema(
+				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+			),
+			cv.Optional(CONF_WARN_WIRELESS): binary_sensor.binary_sensor_schema(
+				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+			),
 		}
 	)
 	.extend(ZONES_CONFIG_SCHEMA)
@@ -121,3 +156,26 @@ async def to_code(config):
 		if partition := config.get(CONF_PARTITION_ALARM_x + str(i)):
 			sens = await binary_sensor.new_binary_sensor(partition)
 			cg.add(parent.set_partition_alarm_sensor(sens, i))
+
+	# Warnings
+	if warn := config.get(CONF_WARN_AC_POWER_LOSS):
+		sens = await binary_sensor.new_binary_sensor(warn)
+		cg.add(parent.set_warn_ac_power_loss_binary_sensor(sens))
+	if warn := config.get(CONF_WARN_MISSING_BPI):
+		sens = await binary_sensor.new_binary_sensor(warn)
+		cg.add(parent.set_warn_missing_bpi_binary_sensor(sens))
+	if warn := config.get(CONF_WARN_FUSE):
+		sens = await binary_sensor.new_binary_sensor(warn)
+		cg.add(parent.set_warn_fuse_binary_sensor(sens))
+	if warn := config.get(CONF_WARN_LOW_BATTERY):
+		sens = await binary_sensor.new_binary_sensor(warn)
+		cg.add(parent.set_warn_low_battery_binary_sensor(sens))
+	if warn := config.get(CONF_WARN_TELEPHONE_LINE):
+		sens = await binary_sensor.new_binary_sensor(warn)
+		cg.add(parent.set_warn_faulty_telephone_line_binary_sensor(sens))
+	if warn := config.get(CONF_WARN_DEFAULT_CODES):
+		sens = await binary_sensor.new_binary_sensor(warn)
+		cg.add(parent.set_warn_default_codes_binary_sensor(sens))
+	if warn := config.get(CONF_WARN_WIRELESS):
+		sens = await binary_sensor.new_binary_sensor(warn)
+		cg.add(parent.set_warn_wireless_binary_sensor(sens))

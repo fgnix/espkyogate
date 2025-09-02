@@ -163,5 +163,6 @@ void BentelKyo::set_partition_armed_text_sensor(text_sensor::TextSensor *sensor,
 }
 #endif
 
+
 }  // namespace bentel_kyo
 }  // namespace esphome

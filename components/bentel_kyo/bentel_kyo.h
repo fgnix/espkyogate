@@ -45,6 +45,16 @@ enum class AlarmModel {
 class BentelKyo : public PollingComponent, public uart::UARTDevice {
 	SUB_BINARY_SENSOR(operational)
 
+	// Warnings
+	SUB_BINARY_SENSOR(warn_ac_power_loss)
+	SUB_BINARY_SENSOR(warn_missing_bpi)
+	SUB_BINARY_SENSOR(warn_fuse)
+	SUB_BINARY_SENSOR(warn_low_battery)
+	SUB_BINARY_SENSOR(warn_faulty_telephone_line)
+	SUB_BINARY_SENSOR(warn_default_codes)
+	SUB_BINARY_SENSOR(warn_wireless)
+
+
 	public:
 		BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions);
 
