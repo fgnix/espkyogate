@@ -8,6 +8,7 @@ from esphome.const import (
 	DEVICE_CLASS_POWER,
 	DEVICE_CLASS_PROBLEM,
 	DEVICE_CLASS_RUNNING,
+	DEVICE_CLASS_TAMPER,
 	ENTITY_CATEGORY_DIAGNOSTIC,
 )
 
@@ -17,6 +18,12 @@ from . import (
 	CONF_PARTITION_ALARM_x,
 	CONF_BENTEL_KYO_ID,
 	CONF_OPERATIONAL,
+	CONF_TAMPER_ZONE,
+	CONF_TAMPER_FAKE_KEY,
+	CONF_TAMPER_BPI,
+	CONF_TAMPER_SYSTEM,
+	CONF_TAMPER_JAM,
+	CONF_TAMPER_WIRELESS,
 	CONF_WARN_AC_POWER_LOSS,
 	CONF_WARN_MISSING_BPI,
 	CONF_WARN_FUSE,
@@ -111,6 +118,26 @@ CONFIG_SCHEMA = (
 			cv.Optional(CONF_WARN_WIRELESS): binary_sensor.binary_sensor_schema(
 				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
 			),
+
+			# Tamper
+			cv.Optional(CONF_TAMPER_ZONE): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_TAMPER,
+			),
+			cv.Optional(CONF_TAMPER_FAKE_KEY): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_TAMPER,
+			),
+			cv.Optional(CONF_TAMPER_BPI): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_TAMPER,
+			),
+			cv.Optional(CONF_TAMPER_SYSTEM): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_TAMPER,
+			),
+			cv.Optional(CONF_TAMPER_JAM): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_TAMPER,
+			),
+			cv.Optional(CONF_TAMPER_WIRELESS): binary_sensor.binary_sensor_schema(
+				device_class=DEVICE_CLASS_TAMPER,
+			),
 		}
 	)
 	.extend(ZONES_CONFIG_SCHEMA)
@@ -179,3 +206,23 @@ async def to_code(config):
 	if warn := config.get(CONF_WARN_WIRELESS):
 		sens = await binary_sensor.new_binary_sensor(warn)
 		cg.add(parent.set_warn_wireless_binary_sensor(sens))
+
+	# Tamper
+	if sabot := config.get(CONF_TAMPER_ZONE):
+		sens = await binary_sensor.new_binary_sensor(sabot)
+		cg.add(parent.set_tamper_zone_binary_sensor(sens))
+	if sabot := config.get(CONF_TAMPER_FAKE_KEY):
+		sens = await binary_sensor.new_binary_sensor(sabot)
+		cg.add(parent.set_tamper_fake_key_binary_sensor(sens))
+	if sabot := config.get(CONF_TAMPER_BPI):
+		sens = await binary_sensor.new_binary_sensor(sabot)
+		cg.add(parent.set_tamper_bpi_binary_sensor(sens))
+	if sabot := config.get(CONF_TAMPER_SYSTEM):
+		sens = await binary_sensor.new_binary_sensor(sabot)
+		cg.add(parent.set_tamper_system_binary_sensor(sens))
+	if sabot := config.get(CONF_TAMPER_JAM):
+		sens = await binary_sensor.new_binary_sensor(sabot)
+		cg.add(parent.set_tamper_jam_binary_sensor(sens))
+	if sabot := config.get(CONF_TAMPER_WIRELESS):
+		sens = await binary_sensor.new_binary_sensor(sabot)
+		cg.add(parent.set_tamper_wireless_binary_sensor(sens))

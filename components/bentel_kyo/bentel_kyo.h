@@ -54,6 +54,14 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 	SUB_BINARY_SENSOR(warn_default_codes)
 	SUB_BINARY_SENSOR(warn_wireless)
 
+	// Tamper
+	SUB_BINARY_SENSOR(tamper_zone)
+	SUB_BINARY_SENSOR(tamper_fake_key)
+	SUB_BINARY_SENSOR(tamper_bpi)
+	SUB_BINARY_SENSOR(tamper_system)
+	SUB_BINARY_SENSOR(tamper_jam)
+	SUB_BINARY_SENSOR(tamper_wireless)
+
 
 	public:
 		BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions);
@@ -103,6 +111,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 #ifdef USE_TEXT_SENSOR
 		text_sensor::TextSensor *partition_armed_text_sensors_[MAX_PARTITIONS];
 #endif
+
 
 		/*
 		 * UART send and receive
