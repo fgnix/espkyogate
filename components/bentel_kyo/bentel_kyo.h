@@ -135,6 +135,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 
 		// State machine status for polling updates
 		PollingStatus polling_status_ = PollingStatus::NOT_RUNNING;
+		std::queue<PollingStatus> polling_steps_scheduled_;
 		bool polling_loop_error_; // True if an error occurred during the polling loop
 		uint8_t polling_error_count_ = 0;
 		// How may time skip the partition update.
@@ -163,6 +164,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		void polling_run();
 		void polling_next_step();
 		void polling_force_partitions_update();
+		PollingStatus polling_fetch_next_step();
 
 		/*
 		 * Send serial request and parse serial response

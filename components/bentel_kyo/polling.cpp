@@ -42,26 +42,19 @@ void BentelKyo::polling_next_step() {
 
 		case PollingStatus::READ_STATUS_UPDATE:
 			status = read_status_update();
-			this->polling_status_ = PollingStatus::WAITING;
-
-			if (this->polling_exec_count_ >= this->partitions_update_skip_) {
-				// It's time to run partition update
-				ESP_LOGD(TAG, "Scheduling partition update in polling loop...");
-				this->polling_status_ = PollingStatus::REQUEST_PARTITIONS_UPDATE;
-			}
 			this->polling_exec_count_++;
+			this->polling_status_ = polling_fetch_next_step();
 			break;
 
 		case PollingStatus::REQUEST_PARTITIONS_UPDATE:
 			next_timeout = request_partitions_update();
 			status = true;
-			this->polling_exec_count_ = 0;
 			this->polling_status_ = PollingStatus::READ_PARTITIONS_UPDATE;
 			break;
 
 		case PollingStatus::READ_PARTITIONS_UPDATE:
 			status = read_partitions_update();
-			this->polling_status_ = PollingStatus::WAITING;
+			this->polling_status_ = polling_fetch_next_step();
 			break;
 	}
 
@@ -101,6 +94,25 @@ void BentelKyo::polling_next_step() {
 void BentelKyo::polling_force_partitions_update() {
 	ESP_LOGI(TAG, "Scheduling next partition update immediatelly");
 	this->polling_exec_count_ = this->partitions_update_skip_+1;
+}
+
+PollingStatus BentelKyo::polling_fetch_next_step() {
+	if (this->polling_status_ == PollingStatus::READ_STATUS_UPDATE
+	    && this->polling_exec_count_ > this->partitions_update_skip_)
+	{
+		// It's time to run partition update
+		ESP_LOGD(TAG, "Running partition update in polling loop...");
+		this->polling_exec_count_ = 0;
+		return PollingStatus::REQUEST_PARTITIONS_UPDATE;
+	}
+
+	if (this->polling_steps_scheduled_.empty()) {
+		return PollingStatus::WAITING;
+	}
+
+	PollingStatus next_step = this->polling_steps_scheduled_.front();
+	this->polling_steps_scheduled_.pop();
+	return next_step;
 }
 
 }  // namespace bentel_kyo
