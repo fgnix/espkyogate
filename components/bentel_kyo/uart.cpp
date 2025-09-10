@@ -64,6 +64,16 @@ int BentelKyo::read_UART(uint8_t buf[], const size_t size) {
 	return len;
 }
 
+/*
+ * The serial protocol uses for command with data a simple checksum; computed on the data only.
+ * Since all commands are 6 B longs we skip that part
+ */
+uint8_t BentelKyo::compute_checksum(const uint8_t *const data, const size_t len) const {
+	uint8_t i, cks = 0;
+	for (i = 6; i < len; i++)
+		cks += data[i];
+	return cks;
+}
 
 }  // namespace bentel_kyo
 }  // namespace esphome

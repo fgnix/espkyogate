@@ -119,6 +119,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		 */
 		void write_UART(const uint8_t *const data, const size_t data_len);
 		int read_UART(uint8_t buf[], const size_t size);
+		uint8_t compute_checksum(const uint8_t *const data, const size_t len) const;
 };
 
 }  // namespace bentel_kyo
