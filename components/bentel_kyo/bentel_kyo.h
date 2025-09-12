@@ -40,6 +40,7 @@ enum class AlarmModel {
 
 class BentelKyo : public PollingComponent, public uart::UARTDevice {
 	public:
+		BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions);
 
 		// Standard ESPHome methods
 		void setup() override;
@@ -49,6 +50,10 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 
 
 	protected:
+		// Alarm type and options
+		const AlarmModel model_;
+		const uint8_t max_partitions_;
+		const uint8_t max_zones_;
 
 		/*
 		 * UART send and receive
