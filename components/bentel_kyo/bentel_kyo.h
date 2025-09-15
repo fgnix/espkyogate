@@ -104,6 +104,8 @@ enum class PollingStatus {
 	READ_ALL_ALARMS_RESET = 9,
 	REQUEST_PARTITIONS_ARM_EDIT = 10,
 	READ_PARTITIONS_ARM_EDIT = 11,
+	REQUEST_ZONE_BYPASS_EDIT = 12,
+	READ_ZONE_BYPASS_EDIT = 13,
 };
 
 
@@ -164,6 +166,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		// Schedule command for execution in next polling
 		void schedule_all_alarms_reset();
 		void schedule_partitions_arm_commit();
+		void schedule_zones_bypass_commit();
 
 		// Configuration options
 		void set_partitions_update_skip(uint8_t skip);

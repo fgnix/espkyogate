@@ -111,6 +111,17 @@ void BentelKyo::polling_next_step() {
 			// Immediatelly perform update to get fresh data about the recently updated armed status
 			polling_force_partitions_update();
 			break;
+
+		case PollingStatus::REQUEST_ZONE_BYPASS_EDIT:
+			next_timeout = request_zones_bypass_edit();
+			status = true;
+			this->polling_status_ = PollingStatus::READ_ZONE_BYPASS_EDIT;
+			break;
+
+		case PollingStatus::READ_ZONE_BYPASS_EDIT:
+			status = read_zones_bypass_edit();
+			this->polling_status_ = polling_fetch_next_step();
+			break;
 	}
 
 	// Operation failed
@@ -178,6 +189,11 @@ void BentelKyo::schedule_all_alarms_reset() {
 void BentelKyo::schedule_partitions_arm_commit() {
 	ESP_LOGI(TAG, "Scheduling change partition arm commit for next polling loop");
 	this->polling_steps_scheduled_.push(PollingStatus::REQUEST_PARTITIONS_ARM_EDIT);
+}
+
+void BentelKyo::schedule_zones_bypass_commit() {
+	ESP_LOGI(TAG, "Scheduling zone bypass edit for next polling loop");
+	this->polling_steps_scheduled_.push(PollingStatus::REQUEST_ZONE_BYPASS_EDIT);
 }
 
 }  // namespace bentel_kyo
