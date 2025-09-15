@@ -24,7 +24,8 @@ BentelKyo::BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions
 }
 
 void BentelKyo::setup(){
-
+	if (this->operational_binary_sensor_ != nullptr)
+		this->operational_binary_sensor_->publish_state(false);
 }
 
 void BentelKyo::update(){

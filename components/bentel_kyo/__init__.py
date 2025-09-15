@@ -9,6 +9,7 @@ MULTI_CONF = True
 
 CONF_BENTEL_KYO_ID = "bentel_kyo_id"
 CONF_MODEL = "model"
+CONF_OPERATIONAL = "operational"
 
 bentel_kyo_ns = cg.esphome_ns.namespace("bentel_kyo")
 AlarmModel = bentel_kyo_ns.enum("AlarmModel", is_class=True)

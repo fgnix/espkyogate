@@ -39,6 +39,8 @@ enum class AlarmModel {
 
 
 class BentelKyo : public PollingComponent, public uart::UARTDevice {
+	SUB_BINARY_SENSOR(operational)
+
 	public:
 		BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions);
 
