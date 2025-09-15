@@ -11,6 +11,7 @@ MAX_PARTITIONS = 8 # a.k.a Areas
 MAX_ZONES = 32
 
 CONF_BENTEL_KYO_ID = "bentel_kyo_id"
+CONF_GLOBAL_ALARM = "global_alarm"
 CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
 CONF_PARTITION_ALARM_x = "partition_alarm_"

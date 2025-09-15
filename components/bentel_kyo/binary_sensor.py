@@ -18,6 +18,7 @@ from . import (
 	CONF_PARTITION_ALARM_x,
 	CONF_BENTEL_KYO_ID,
 	CONF_OPERATIONAL,
+	CONF_GLOBAL_ALARM,
 	CONF_TAMPER_ZONE,
 	CONF_TAMPER_FAKE_KEY,
 	CONF_TAMPER_BPI,
@@ -92,6 +93,7 @@ CONFIG_SCHEMA = (
 				device_class=DEVICE_CLASS_RUNNING,
 				entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
 			),
+			cv.Optional(CONF_GLOBAL_ALARM): binary_sensor.binary_sensor_schema(),
 
 			# Warnings
 			cv.Optional(CONF_WARN_AC_POWER_LOSS): binary_sensor.binary_sensor_schema(
@@ -151,6 +153,10 @@ async def to_code(config):
 	if operational := config.get(CONF_OPERATIONAL):
 		sens = await binary_sensor.new_binary_sensor(operational)
 		cg.add(parent.set_operational_binary_sensor(sens))
+
+	if glob_alarm := config.get(CONF_GLOBAL_ALARM):
+		sens = await binary_sensor.new_binary_sensor(glob_alarm)
+		cg.add(parent.set_global_alarm_binary_sensor(sens))
 
 	# Zones
 	for i in range(1, MAX_ZONES+1):
