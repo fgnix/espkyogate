@@ -338,6 +338,82 @@ bool BentelKyo::parse_long_partitions_update(const uint8_t buf[], const size_t l
 	}
 #endif
 
+	// Read global alarm
+	if (this->global_alarm_binary_sensor_ == nullptr) {
+		ESP_LOGV(TAG, "Skipping global alarm: Sensor not set");
+	} else {
+		status = (buf[10] >> 5) & 1;
+		if (this->global_alarm_binary_sensor_->state != status)
+			ESP_LOGI(TAG, "Global alarm status: %i", status);
+		this->global_alarm_binary_sensor_->publish_state(status);
+	}
+
+	// Read zone bypassed
+	for (i = 0; i < this->used_zones_; i++) {
+		if (this->zone_bypassed_sensors_[i] == nullptr) {
+			ESP_LOGV(TAG, "Zone ID %i: zone bypassed sensor not set. SKIP", i+1);
+			continue;
+		}
+
+		if (i <= 7)
+			status = (buf[16] >> i) & 1;
+		else if (i >= 8 && i <= 15)
+			status = (buf[15] >> (i - 8)) & 1;
+		else if (i >= 16 && i <= 23)
+			status = (buf[14] >> (i - 16)) & 1;
+		else if (i >= 24)
+			status = (buf[13] >> (i - 24)) & 1;
+
+		if (status != this->zone_bypassed_sensors_[i]->state) {
+			ESP_LOGI(TAG, "Zone ID %i: Bypass %s", i+1, status ? "enabled" : "disabled");
+		}
+		this->zone_bypassed_sensors_[i]->publish_state(status);
+	}
+
+	// Read alarm memory
+	for (i = 0; i < this->used_zones_; i++) {
+		if (this->zone_alarm_memory_sensors_[i] == nullptr) {
+			ESP_LOGV(TAG, "Zone ID %i: zone alarm memory sensor not set. SKIP", i+1);
+			continue;
+		}
+
+		if (i <= 7)
+			status = (buf[20] >> i) & 1;
+		else if (i >= 8 && i <= 15)
+			status = (buf[19] >> (i - 8)) & 1;
+		else if (i >= 16 && i <= 23)
+			status = (buf[18] >> (i - 16)) & 1;
+		else if (i >= 24)
+			status = (buf[17] >> (i - 24)) & 1;
+
+		if (status != this->zone_alarm_memory_sensors_[i]->state) {
+			ESP_LOGI(TAG, "Zone ID %i: Alarm memory %i", i+1, status);
+		}
+		this->zone_alarm_memory_sensors_[i]->publish_state(status);
+	}
+
+	// Read zone tamper memory sensors
+	for (i = 0; i < this->used_zones_; i++) {
+		if (this->zone_tamper_memory_sensors_[i] == nullptr) {
+			ESP_LOGV(TAG, "Zone ID %i: Zone tamper memory sensor not set. SKIP", i+1);
+			continue;
+		}
+
+		if (i <= 7)
+			status = (buf[24] >> i) & 1;
+		else if (i >= 8 && i <= 15)
+			status = (buf[23] >> (i - 8)) & 1;
+		else if (i >= 16 && i <= 23)
+			status = (buf[22] >> (i - 16)) & 1;
+		else if (i >= 24)
+			status = (buf[21] >> (i - 24)) & 1;
+
+		if (status != this->zone_tamper_memory_sensors_[i]->state) {
+			ESP_LOGI(TAG, "Zone ID %i: Tamper memory %i", i+1, status);
+		}
+		this->zone_tamper_memory_sensors_[i]->publish_state(status);
+	}
+
 	ESP_LOGD(TAG, "Valid partition update received");
 	return true;
 }
