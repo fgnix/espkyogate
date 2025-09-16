@@ -20,7 +20,13 @@ namespace bentel_kyo {
 BentelKyo::BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions)
 	: model_(model), max_partitions_(max_partitions), max_zones_(max_zones)
 {
-
+	for (int i = 0; i < MAX_ZONES; i++) {
+		this->zone_sensors_[i] = nullptr;
+		this->zone_tamper_sensors_[i] = nullptr;
+		this->zone_bypassed_sensors_[i] = nullptr;
+		this->zone_alarm_memory_sensors_[i] = nullptr;
+		this->zone_tamper_memory_sensors_[i] = nullptr;
+	}
 }
 
 void BentelKyo::setup(){
@@ -41,6 +47,81 @@ void BentelKyo::dump_config(){
 	              this->model_,
 	              this->max_zones_,
 	              this->max_partitions_);
+}
+
+void BentelKyo::set_zone_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id) {
+	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1
+	if (zone_num >= this->max_zones_) {
+		ESP_LOGE(TAG, "Zone ID %u: unable to set zone_sensor. Only %u zones are supported", zone_id, this->max_zones_);
+		return;
+	}
+	if (this->zone_sensors_[zone_num] != nullptr) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_sensor. Already set", zone_id);
+		return;
+	}
+	this->zone_sensors_[zone_num] = sensor;
+	if (zone_num >= this->used_zones_)
+		this->used_zones_ = zone_num + 1;
+}
+void BentelKyo::set_zone_tamper_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id){
+	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1
+	if (zone_num >= this->max_zones_) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_tamper_sensor. Only %u zones are supported",
+		         zone_id, this->max_zones_);
+		return;
+	}
+	if (this->zone_tamper_sensors_[zone_num] != nullptr) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_tamper_sensor. Already set", zone_id);
+		return;
+	}
+	this->zone_tamper_sensors_[zone_num] = sensor;
+	if (zone_num >= this->used_zones_)
+		this->used_zones_ = zone_num + 1;
+}
+void BentelKyo::set_zone_bypassed_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id){
+	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1
+	if (zone_num >= this->max_zones_) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_bypassed_sensor. Only %u zones are supported",
+		         zone_id, this->max_zones_);
+		return;
+	}
+	if (this->zone_bypassed_sensors_[zone_num] != nullptr) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_bypassed_sensor. Already set", zone_id);
+		return;
+	}
+	this->zone_bypassed_sensors_[zone_num] = sensor;
+	if (zone_num >= this->used_zones_)
+		this->used_zones_ = zone_num + 1;
+}
+void BentelKyo::set_zone_alarm_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id){
+	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1
+	if (zone_num >= this->max_zones_) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_alarm_memory_sensor. Only %u zones are supported",
+		         zone_id, this->max_zones_);
+		return;
+	}
+	if (this->zone_alarm_memory_sensors_[zone_num] != nullptr) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_alarm_memory_sensor. Already set", zone_id);
+		return;
+	}
+	this->zone_alarm_memory_sensors_[zone_num] = sensor;
+	if (zone_num >= this->used_zones_)
+		this->used_zones_ = zone_num + 1;
+}
+void BentelKyo::set_zone_tamper_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id){
+	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1
+	if (zone_num >= this->max_zones_) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_tamper_memory_sensor. Only %u zones are supported",
+		         zone_id, this->max_zones_);
+		return;
+	}
+	if (this->zone_tamper_memory_sensors_[zone_num] != nullptr) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_tamper_memory_sensor. Already set", zone_id);
+		return;
+	}
+	this->zone_tamper_memory_sensors_[zone_num] = sensor;
+	if (zone_num >= this->used_zones_)
+		this->used_zones_ = zone_num + 1;
 }
 
 }  // namespace bentel_kyo

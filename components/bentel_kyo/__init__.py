@@ -7,9 +7,17 @@ from esphome.const import CONF_ID
 DEPENDENCIES = ["uart"]
 MULTI_CONF = True
 
+MAX_ZONES = 32
+MAX_PARTITIONS = 8 # a.k.a Areas
+
 CONF_BENTEL_KYO_ID = "bentel_kyo_id"
 CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
+CONF_ZONE_x = "zone_"
+CONF_ZONE_ALARM_MEMORY_x = "zone_alarm_memory_"
+CONF_ZONE_BYPASSED_x = "zone_bypassed_"
+CONF_ZONE_TAMPER_x = "zone_tamper_"
+CONF_ZONE_TAMPER_MEMORY_x = "zone_tamper_memory_"
 
 bentel_kyo_ns = cg.esphome_ns.namespace("bentel_kyo")
 AlarmModel = bentel_kyo_ns.enum("AlarmModel", is_class=True)

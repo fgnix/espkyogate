@@ -51,11 +51,32 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		float get_setup_priority() const override { return setup_priority::DATA; };
 
 
+		// Attach zone sensors
+		void set_zone_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
+		void set_zone_tamper_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
+		void set_zone_bypassed_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
+		void set_zone_alarm_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
+		void set_zone_tamper_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
+
+
 	protected:
 		// Alarm type and options
 		const AlarmModel model_;
 		const uint8_t max_partitions_;
 		const uint8_t max_zones_;
+		/*
+		 * Zone and Partition IDs are used to indetify them starting from 1. Like in the ESPHome configuration
+		 * Zone and Partition Nums starts from 0 and are used to identify them in the arrays.
+		 */
+		uint8_t used_partitions_ = 0;
+		uint8_t used_zones_ = 0;
+
+		// Zones
+		binary_sensor::BinarySensor *zone_sensors_[MAX_ZONES];
+		binary_sensor::BinarySensor *zone_tamper_sensors_[MAX_ZONES];
+		binary_sensor::BinarySensor *zone_bypassed_sensors_[MAX_ZONES];
+		binary_sensor::BinarySensor *zone_alarm_memory_sensors_[MAX_ZONES];
+		binary_sensor::BinarySensor *zone_tamper_memory_sensors_[MAX_ZONES];
 
 		/*
 		 * UART send and receive
