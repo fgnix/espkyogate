@@ -55,6 +55,42 @@ void BentelKyo::zones_bypass_uncommited_reset() {
 	this->zone_uncommitted_bypass_disable_ = 0;
 }
 
+uint32_t BentelKyo::request_zones_bypass_edit() {
+	ESP_LOGI(TAG, "Requesting zones bypass edit...");
+	uint8_t cmd[sizeof(command::editZonesBypass) + 9]; // 6 B cmd + 4 B bypassed + 4 B non-bypassed + 1B sum
+	memcpy(cmd, command::editZonesBypass, sizeof(command::editZonesBypass));
+
+	cmd[6] = (zone_uncommitted_bypass_enable_ >> 24) & 0xFF; // ZoneID 32-25
+	cmd[7] = (zone_uncommitted_bypass_enable_ >> 16) & 0xFF; // ZoneID 24-17
+	cmd[8] = (zone_uncommitted_bypass_enable_ >> 8) & 0xFF;  // ZoneID 16-09
+	cmd[9] = (zone_uncommitted_bypass_enable_ >> 0) & 0xFF;  // ZoneID 08-01
+	cmd[10] = (zone_uncommitted_bypass_disable_ >> 24) & 0xFF; // ZoneID 32-25
+	cmd[11] = (zone_uncommitted_bypass_disable_ >> 16) & 0xFF; // ZoneID 24-17
+	cmd[12] = (zone_uncommitted_bypass_disable_ >> 8) & 0xFF;  // ZoneID 16-09
+	cmd[13] = (zone_uncommitted_bypass_disable_ >> 0) & 0xFF;  // ZoneID 08-01
+	cmd[14] = compute_checksum(cmd, sizeof(cmd)-1);
+
+#ifdef DRY_RUN
+	ESP_LOGI(TAG, "[DRY-RUN] Edit zones bypass command not sent: '%s'", format_hex_pretty(cmd, sizeof(cmd)).c_str());
+#else
+	write_UART(cmd, sizeof(cmd));
+#endif
+	return command_response_time::editZonesBypass;
+}
+
+bool BentelKyo::read_zones_bypass_edit() {
+#ifdef DRY_RUN
+	ESP_LOGI(TAG, "[DRY-RUN] Zones bypass edited successfully");
+#else
+	if (!read_simple_ack(command::editZonesBypass, sizeof(command::editZonesBypass))) {
+		ESP_LOGW(TAG, "Unable to edit zones bypass");
+		return false;
+	}
+	ESP_LOGI(TAG, "Zones bypass edited successfully");
+#endif
+	zones_bypass_uncommited_reset();
+	return true;
+}
 
 } // namespace bentel_kyo
 } // namespace esphome
