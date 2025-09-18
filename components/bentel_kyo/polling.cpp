@@ -77,6 +77,20 @@ void BentelKyo::polling_next_step() {
 			}
 			break;
 #endif
+
+		case PollingStatus::REQUEST_ALL_ALARMS_RESET:
+			next_timeout = request_all_alarms_reset();
+			status = true;
+			this->polling_status_ = PollingStatus::READ_ALL_ALARMS_RESET;
+			break;
+
+		case PollingStatus::READ_ALL_ALARMS_RESET:
+			status = read_all_alarms_reset();
+			this->polling_status_ = polling_fetch_next_step();
+
+			// Immediatelly perform update to get fresh data about the recently reset alarms
+			polling_force_partitions_update();
+			break;
 	}
 
 	// Operation failed
@@ -134,6 +148,11 @@ PollingStatus BentelKyo::polling_fetch_next_step() {
 	PollingStatus next_step = this->polling_steps_scheduled_.front();
 	this->polling_steps_scheduled_.pop();
 	return next_step;
+}
+
+void BentelKyo::schedule_all_alarms_reset() {
+	ESP_LOGI(TAG, "Scheduling reset all alarms for next polling loop");
+	this->polling_steps_scheduled_.push(PollingStatus::REQUEST_ALL_ALARMS_RESET);
 }
 
 }  // namespace bentel_kyo
