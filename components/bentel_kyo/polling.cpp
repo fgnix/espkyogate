@@ -91,6 +91,26 @@ void BentelKyo::polling_next_step() {
 			// Immediatelly perform update to get fresh data about the recently reset alarms
 			polling_force_partitions_update();
 			break;
+
+		case PollingStatus::REQUEST_PARTITIONS_ARM_EDIT:
+			status = request_partitions_arm_edit(next_timeout);
+			if (status) {
+				// Request sent. Read the response in the next step
+				this->polling_status_ = PollingStatus::READ_PARTITIONS_ARM_EDIT;
+			} else {
+				// No request sent. Proceed with the next command
+				status = true;
+				this->polling_status_ = polling_fetch_next_step();
+			}
+			break;
+
+		case PollingStatus::READ_PARTITIONS_ARM_EDIT:
+			status = read_partitions_arm_edit();
+			this->polling_status_ = polling_fetch_next_step();
+
+			// Immediatelly perform update to get fresh data about the recently updated armed status
+			polling_force_partitions_update();
+			break;
 	}
 
 	// Operation failed
@@ -153,6 +173,11 @@ PollingStatus BentelKyo::polling_fetch_next_step() {
 void BentelKyo::schedule_all_alarms_reset() {
 	ESP_LOGI(TAG, "Scheduling reset all alarms for next polling loop");
 	this->polling_steps_scheduled_.push(PollingStatus::REQUEST_ALL_ALARMS_RESET);
+}
+
+void BentelKyo::schedule_partitions_arm_commit() {
+	ESP_LOGI(TAG, "Scheduling change partition arm commit for next polling loop");
+	this->polling_steps_scheduled_.push(PollingStatus::REQUEST_PARTITIONS_ARM_EDIT);
 }
 
 }  // namespace bentel_kyo
