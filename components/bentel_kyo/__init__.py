@@ -16,6 +16,7 @@ CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
 CONF_PARTITION_ALARM_x = "partition_alarm_"
 CONF_PARTITION_ARMED_STATUS_x = "partition_armed_status_"
+CONF_PARTITIONS_UPDATE_SKIP = "partitions_update_skip"
 CONF_TAMPER_ZONE = "tamper_zone"
 CONF_TAMPER_FAKE_KEY = "tamper_fake_key"
 CONF_TAMPER_BPI = "tamper_bpi"
@@ -75,6 +76,7 @@ CONFIG_SCHEMA = (
 		{
 			cv.GenerateID(): cv.declare_id(BentelKyo),
 			cv.Required(CONF_MODEL): cv.enum(text2AlarmModel),
+			cv.Optional(CONF_PARTITIONS_UPDATE_SKIP): cv.int_range(min=0, max=250),
 		}
 	)
 	.extend(cv.polling_component_schema("10s"))
@@ -88,3 +90,6 @@ async def to_code(config):
 	var = cg.new_Pvariable(config[CONF_ID], config[CONF_MODEL], zones_num, partitions_num)
 	await cg.register_component(var, config)
 	await uart.register_uart_device(var, config)
+
+	if partitions_update_skip := config.get(CONF_PARTITIONS_UPDATE_SKIP):
+		cg.add(var.set_partitions_update_skip(partitions_update_skip))

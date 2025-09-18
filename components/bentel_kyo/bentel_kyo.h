@@ -93,6 +93,8 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		void dump_config() override;
 		float get_setup_priority() const override { return setup_priority::DATA; };
 
+		// Configuration options
+		void set_partitions_update_skip(uint8_t skip);
 
 		// Attach zone sensors
 		void set_zone_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
@@ -119,6 +121,12 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		 */
 		uint8_t used_partitions_ = 0;
 		uint8_t used_zones_ = 0;
+
+		// How may time skip the partition update.
+		//   0 => update partition every status update
+		//   1 => skip 1 time. Update partition every 2 status update
+		uint8_t partitions_update_skip_ = 0;
+		uint8_t polling_exec_count_ = 0;
 
 		// Zones
 		binary_sensor::BinarySensor *zone_sensors_[MAX_ZONES];

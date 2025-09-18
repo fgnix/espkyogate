@@ -49,11 +49,15 @@ void BentelKyo::dump_config(){
 	              "Bentel Kyo:\n"
 	              "  model: %i\n"
 	              "  max_zones: %i\n"
-	              "  max_partitions: %i\n",
+	              "  max_partitions: %i\n"
+	              "  partitions_update_skip: %u",
 	              this->model_,
 	              this->max_zones_,
-	              this->max_partitions_);
+	              this->max_partitions_,
+	              this->partitions_update_skip_);
 }
+
+void BentelKyo::set_partitions_update_skip(uint8_t skip) { this->partitions_update_skip_ = skip; }
 
 void BentelKyo::set_zone_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id) {
 	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1
