@@ -121,6 +121,8 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		                           const size_t rx_len) const;
 		uint32_t request_status_update();
 		bool read_status_update();
+		uint32_t request_partitions_update();
+		bool read_partitions_update();
 
 		/*
 		 * Parse UART responses
@@ -132,6 +134,8 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		 */
 		bool parse_long_status_update(const uint8_t buf[], const size_t len);
 		bool parse_short_status_update(const uint8_t buf[], const size_t len);
+		bool parse_long_partitions_update(const uint8_t buf[], const size_t len);
+		bool parse_short_partitions_update(const uint8_t buf[], const size_t len);
 
 		/*
 		 * UART send and receive

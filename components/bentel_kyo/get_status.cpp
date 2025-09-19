@@ -67,6 +67,37 @@ bool BentelKyo::read_status_update() {
 	return false;
 }
 
+uint32_t BentelKyo::request_partitions_update() {
+	write_UART(command::getPartitionsStatus, sizeof(command::getPartitionsStatus));
+	return command_response_time::getPartitionsStatus;
+}
+
+bool BentelKyo::read_partitions_update() {
+	uint8_t buf[RX_BUF_STD_SIZE];
+	int len = 0;
+
+	len = read_UART(buf, RX_BUF_STD_SIZE);
+
+	if (len == 0) {
+		ESP_LOGE(TAG, "No UART response");
+		return false;
+	}
+	if (len < 0)
+		return false;
+
+	switch (this->model_) {
+		case AlarmModel::KYO_8G:
+		case AlarmModel::KYO_8W:
+		case AlarmModel::KYO_8GW:
+		case AlarmModel::KYO_32:
+		case AlarmModel::KYO_32G:
+			return parse_long_partitions_update(buf, len);
+	}
+
+	ESP_LOGE(TAG, "Unspupported alarm type");
+	return false;
+}
+
 bool BentelKyo::parse_long_status_update(const uint8_t buf[], const size_t len) {
 	if (len != response_length::getStatus) {
 		ESP_LOGE(TAG, "invalid message length %d. Check if the alarm model is correct", len);
@@ -240,6 +271,28 @@ bool BentelKyo::parse_long_status_update(const uint8_t buf[], const size_t len) 
 	return true;
 }
 
+bool BentelKyo::parse_long_partitions_update(const uint8_t buf[], const size_t len) {
+	if (len != response_length::getPartitionsStatus) {
+		ESP_LOGE(TAG, "invalid message length %d. Check if the alarm model is correct", len);
+		return false;
+	}
+	if (!match_cmd_in_response(command::getPartitionsStatus, sizeof(command::getPartitionsStatus), buf, len)) {
+		ESP_LOGE(TAG, "Invalid response. Missing command at the beginning");
+		return false;
+	}
+
+	// Validate checksum
+	const uint8_t cks = compute_checksum(buf, response_length::getPartitionsStatus-1);
+	if (cks != buf[25]) {
+		ESP_LOGE(TAG, "Invalid chekcsum in partition update response. Got 0x%x expected 0x%x", cks, buf[17]);
+		return false;
+	}
+
+	uint8_t i;
+
+	ESP_LOGD(TAG, "Valid partition update received");
+	return true;
+}
 
 
 
