@@ -349,6 +349,11 @@ bool BentelKyo::parse_long_partitions_update(const uint8_t buf[], const size_t l
 	}
 
 	// Read zone bypassed
+#ifdef USE_SWITCH
+	if (this->zone_uncommitted_bypass_enable_ != 0 || this->zone_uncommitted_bypass_disable_ != 0) {
+		ESP_LOGD(TAG, "Uncomited zone bypass edits. Do not update the zone_bypass_switch");
+	}
+#endif
 	for (i = 0; i < this->used_zones_; i++) {
 		if (this->zone_bypassed_sensors_[i] == nullptr) {
 			ESP_LOGV(TAG, "Zone ID %i: zone bypassed sensor not set. SKIP", i+1);
@@ -368,6 +373,16 @@ bool BentelKyo::parse_long_partitions_update(const uint8_t buf[], const size_t l
 			ESP_LOGI(TAG, "Zone ID %i: Bypass %s", i+1, status ? "enabled" : "disabled");
 		}
 		this->zone_bypassed_sensors_[i]->publish_state(status);
+
+		// Unless there are uncommitted changes, update also the switch state
+#ifdef USE_SWITCH
+		if (this->zone_uncommitted_bypass_enable_ == 0 && this->zone_uncommitted_bypass_disable_ == 0
+		    && this->zone_bypass_switch_[i] != nullptr)
+		{
+			ESP_LOGV(TAG, "Zone ID %i: Update zone_bypass_switch state to %i", i+1, status);
+			this->zone_bypass_switch_[i]->publish_state(status);
+		}
+#endif
 	}
 
 	// Read alarm memory
@@ -418,6 +433,29 @@ bool BentelKyo::parse_long_partitions_update(const uint8_t buf[], const size_t l
 	return true;
 }
 
+bool BentelKyo::read_simple_ack(const uint8_t *cmd, const uint8_t expected_len) {
+	uint8_t buf[RX_BUF_STD_SIZE];
+	int len = 0;
+
+	len = read_UART(buf, RX_BUF_STD_SIZE);
+
+	if (len == 0) {
+		ESP_LOGE(TAG, "No UART response");
+		return false;
+	}
+	if (len < 0)
+		return false;
+
+	if (len != expected_len) {
+		ESP_LOGE(TAG, "Invalid message length %d. Check if the alarm model is correct", len);
+		return false;
+	}
+	if (!match_cmd_in_response(cmd, expected_len, buf, len)) {
+		ESP_LOGE(TAG, "Invalid response. Missing command at the beginning");
+		return false;
+	}
+	return true;
+}
 
 
 }  // namespace bentel_kyo

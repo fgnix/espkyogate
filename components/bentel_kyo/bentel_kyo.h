@@ -175,6 +175,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		bool read_status_update();
 		uint32_t request_partitions_update();
 		bool read_partitions_update();
+		bool read_simple_ack(const uint8_t *cmd, const uint8_t len);
 
 		/*
 		 * Parse UART responses
