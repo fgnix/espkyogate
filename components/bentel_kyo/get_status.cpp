@@ -289,6 +289,54 @@ bool BentelKyo::parse_long_partitions_update(const uint8_t buf[], const size_t l
 	}
 
 	uint8_t i;
+	bool status, status_A, status_S, status_I, status_D;
+	std::string text_status;
+
+#ifdef USE_TEXT_SENSOR
+	// Read partition armed status
+	for (i = 0; i < this->used_partitions_; i++) {
+		if (this->partition_armed_text_sensors_[i] == nullptr) {
+			ESP_LOGV(TAG, "Partition ID %i: Armed status sensor not set. SKIP", i+1);
+			continue;
+		}
+
+		text_status = "";
+		status = true; // False. If status is unknown
+		status_A = (buf[6] >> i) & 1; // "Away"
+		status_S = (buf[7] >> i) & 1; // "Stay"
+		status_I = (buf[8] >> i) & 1; // "Stay 0 delay"
+		status_D = (buf[9] >> i) & 1; // "Disarmed"
+
+		if (status_A)
+			text_status = partitions_arm_mode::ARMED_AWAY;
+		if (status_S) {
+			if (!text_status.empty())
+				status = false;
+			text_status = partitions_arm_mode::ARMED_STAY;
+		}
+		if (status_I) {
+			if (!text_status.empty())
+				status = false;
+			text_status = partitions_arm_mode::ARMED_STAY_0_DELAY;
+		}
+		if (status_D) {
+			if (!text_status.empty())
+				status = false;
+			text_status = partitions_arm_mode::DISARMED;
+		}
+
+		if (!status) {
+			ESP_LOGE(TAG, "Partition ID %i: Unable to determine armed status. Multiple flag set", i+1);
+			this->partition_armed_text_sensors_[i]->publish_state(partitions_arm_mode::UNKNOWN);
+			continue;
+		}
+
+		if (this->partition_armed_text_sensors_[i]->state != text_status) {
+			ESP_LOGI(TAG, "Partition ID %i: Armed status '%s'", i+1, text_status.c_str());
+			this->partition_armed_text_sensors_[i]->publish_state(text_status);
+		}
+	}
+#endif
 
 	ESP_LOGD(TAG, "Valid partition update received");
 	return true;

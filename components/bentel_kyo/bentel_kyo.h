@@ -30,6 +30,26 @@ static const char *const TAG = "bentel_kyo";
 static const uint8_t MAX_ZONES = 32;
 static const uint8_t MAX_PARTITIONS = 8; // (a.k.a. Areas)
 
+namespace partitions_arm_mode {
+	static const char *const NO_CHANGE = "No change";
+#ifdef LANG_IT
+	static const char *const ARM_AWAY = "Inserisci";
+	static const char *const ARMED_AWAY = "Inserito";
+	static const char *const ARMED_STAY = "Parziale";
+	static const char *const ARMED_STAY_0_DELAY = "Parziale 0 ritardo";
+	static const char *const DISARM = "Disinserici";
+	static const char *const DISARMED = "Disinserito";
+#else
+	static const char *const ARM_AWAY = "Away";
+	static const char *const ARMED_AWAY = "Away";
+	static const char *const ARMED_STAY = "Stay";
+	static const char *const ARMED_STAY_0_DELAY = "Stay 0 delay";
+	static const char *const DISARM = "Disarm";
+	static const char *const DISARMED = "Disarmed";
+#endif
+	static const char *const UNKNOWN = "Unknown";
+}
+
 enum class AlarmModel {
 	UNKNOWN = 0,
 	KYO_4 = 1,
