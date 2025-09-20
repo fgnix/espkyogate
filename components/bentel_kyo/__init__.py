@@ -20,6 +20,7 @@ CONF_GLOBAL_ALARM = "global_alarm"
 CONF_LANG = "lang"
 CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
+CONF_PARTITION_x = "partition_"
 CONF_PARTITION_ALARM_x = "partition_alarm_"
 CONF_PARTITION_ARMED_STATUS_x = "partition_armed_status_"
 CONF_PARTITIONS_UPDATE_SKIP = "partitions_update_skip"
@@ -45,9 +46,11 @@ CONF_ZONE_TAMPER_MEMORY_x = "zone_tamper_memory_"
 
 bentel_kyo_ns = cg.esphome_ns.namespace("bentel_kyo")
 AlarmModel = bentel_kyo_ns.enum("AlarmModel", is_class=True)
+PartitionsArmMode = bentel_kyo_ns.enum("PartitionsArmMode", is_class=True)
 BentelKyo = bentel_kyo_ns.class_("BentelKyo", cg.PollingComponent, uart.UARTDevice)
 ClockUpdateAction = bentel_kyo_ns.class_("ClockUpdateAction", automation.Action)
 AllAlarmsResetAction = bentel_kyo_ns.class_("AllAlarmsResetAction", automation.Action)
+PartitionsArmedEditAction = bentel_kyo_ns.class_("PartitionsArmedEditAction", automation.Action)
 
 text2AlarmModel = {
 	"Kyo4": AlarmModel.KYO_4,
@@ -84,6 +87,17 @@ SupportedLangs = (
 	"it",
 )
 
+text2PartitionsArmMode = {
+	"no_change": PartitionsArmMode.NO_CHANGE,
+	"total": PartitionsArmMode.AWAY,
+	"away": PartitionsArmMode.AWAY,
+	"partial": PartitionsArmMode.STAY,
+	"stay": PartitionsArmMode.STAY,
+	"partial_0_delay": PartitionsArmMode.STAY_0_DELAY,
+	"stay_0_delay": PartitionsArmMode.STAY_0_DELAY,
+	"disarm": PartitionsArmMode.DISARM,
+};
+
 CONFIG_SCHEMA = (
 	cv.Schema(
 		{
@@ -109,6 +123,19 @@ SIMPLE_ACTION_SCHEMA = automation.maybe_simple_id(
 	{
 		cv.Required(CONF_BENTEL_KYO_ID): cv.use_id(BentelKyo),
 	}
+)
+PARTITIONS_ARM_ACTION_SCHEMA = (
+	cv.Schema(
+		{
+			cv.Required(CONF_BENTEL_KYO_ID): cv.use_id(BentelKyo),
+		}
+	)
+	.extend(
+		{
+			cv.Optional(CONF_PARTITION_x + str(i)): cv.enum(text2PartitionsArmMode)
+			for i in range(1, MAX_PARTITIONS+1)
+		}
+	)
 )
 
 async def to_code(config):
@@ -149,3 +176,18 @@ async def to_code(config):
 async def bentel_kyo_action_to_code(config, action_id, template_arg, args):
 	paren = await cg.get_variable(config[CONF_BENTEL_KYO_ID])
 	return cg.new_Pvariable(action_id, template_arg, paren)
+
+
+@automation.register_action("bentel_kyo.partitions_aremd_edit", PartitionsArmedEditAction, PARTITIONS_ARM_ACTION_SCHEMA)
+async def bentel_kyo_change_armed_status_action_to_code(config, action_id, template_arg, args):
+	paren = await cg.get_variable(config[CONF_BENTEL_KYO_ID])
+	var = cg.new_Pvariable(action_id, template_arg, paren)
+
+	for i in range(1, MAX_PARTITIONS+1):
+		if (
+			(partition_mode := config.get(CONF_PARTITION_x + str(i)))
+			and text2PartitionsArmMode[partition_mode] != PartitionsArmMode.NO_CHANGE
+		):
+			cg.add(var.set_partition_armed_mode(i, partition_mode))
+
+	return var

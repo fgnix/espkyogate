@@ -40,5 +40,17 @@ template<typename... Ts> class AllAlarmsResetAction : public Action<Ts...> {
 };
 template class AllAlarmsResetAction<>;
 
+template<typename... Ts> class PartitionsArmedEditAction : public Action<Ts...> {
+	public:
+		PartitionsArmedEditAction(BentelKyo *component);
+		void play(Ts... x) override;
+		void set_partition_armed_mode(const uint8_t partition_id, const PartitionsArmMode mode);
+
+	protected:
+		BentelKyo *bentel_kyo_;
+		PartitionsArmMode partition_mode_[MAX_PARTITIONS];
+};
+template class PartitionsArmedEditAction<>;
+
 } // namespace bentel_kyo
 } // namespace esphome
