@@ -258,6 +258,8 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 #endif
 		uint32_t request_all_alarms_reset();
 		bool read_all_alarms_reset();
+		bool request_partitions_arm_edit(uint32_t &expected_response_time);
+		bool read_partitions_arm_edit();
 
 		/*
 		 * Parse UART responses

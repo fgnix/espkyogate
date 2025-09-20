@@ -110,6 +110,70 @@ void BentelKyo::partitions_arm_uncommited_reset() {
 	this->partitions_arm_uncommitted_disarm_ = 0;
 }
 
+bool BentelKyo::request_partitions_arm_edit(uint32_t &expected_response_time) {
+	const uint32_t new_armed_status = compute_new_partitions_armed_status();
+	if (new_armed_status == this->partitions_armed_status_) {
+		ESP_LOGI(TAG, "Skip change partition armed status. The requested status is already enabled");
+		partitions_arm_uncommited_reset();
+		return false;
+	}
+	ESP_LOGI(TAG, "Changing partition armed status...");
+
+	const uint8_t arm_away = (new_armed_status >> 24) & 0xFF;
+	const uint8_t arm_stay = (new_armed_status >> 16) & 0xFF;
+	const uint8_t arm_stay_0_delay = (new_armed_status >> 8) & 0xFF;
+	const uint8_t disarm = (new_armed_status >> 0) & 0xFF;
+	ESP_LOGD(TAG, "Changing partition armed status '%X.%X.%X.%X' => '%X.%X.%X.%X'",
+	              (this->partitions_armed_status_ >> 24) & 0xFF,
+	              (this->partitions_armed_status_ >> 16) & 0xFF,
+	              (this->partitions_armed_status_ >> 8) & 0xFF,
+	              (this->partitions_armed_status_ >> 0) & 0xFF,
+	              arm_away,
+	              arm_stay,
+	              arm_stay_0_delay,
+	              disarm);
+
+	// Create the actual serial command
+	uint8_t cmd[sizeof(command::editPartitionsArmed) + 5]; // 6 B of command + 3 B of parameters + 2 B of checksum
+	memcpy(cmd, command::editPartitionsArmed, sizeof(command::editPartitionsArmed));
+
+	cmd[6] = arm_away;
+	cmd[7] = arm_stay;
+	cmd[8] = arm_stay_0_delay;
+	cmd[9] = disarm;
+	cmd[10] = compute_checksum(cmd, sizeof(cmd)-1);
+
+	// Since each partition must be set exactly 1 time and there are 8 partitions the sum must always be 0xFF.
+	// Makeing sure that is actually 0xFF is like controlling that each one is set exactly 1 time.
+	if (cmd[10] != 0xFF) {
+		ESP_LOGE(TAG, "Invalid partition aremd checksum. It MUST always be 0xFF");
+		return false;
+	}
+
+#ifdef DRY_RUN
+	ESP_LOGI(TAG, "[DRY-RUN] Update partition armed status command not sent: '%s'",
+	         format_hex_pretty(cmd, sizeof(cmd)).c_str());
+#else
+	write_UART(cmd, sizeof(cmd));
+#endif
+	expected_response_time = command_response_time::editPartitionsArmed;
+	return true;
+}
+
+bool BentelKyo::read_partitions_arm_edit() {
+#ifdef DRY_RUN
+	ESP_LOGI(TAG, "[DRY-RUN] Partitions arm edited successfully!");
+#else
+	if (!read_simple_ack(command::editPartitionsArmed, sizeof(command::editPartitionsArmed))) {
+		ESP_LOGW(TAG, "Unable to change partition armed status");
+		return false;
+	}
+	ESP_LOGI(TAG, "Partitions arm edited successfully!");
+#endif
+	partitions_arm_uncommited_reset();
+	return true;
+}
+
 
 } // namespace bentel_kyo
 } // namespace esphome
