@@ -17,6 +17,7 @@ CONF_BENTEL_KYO_ID = "bentel_kyo_id"
 CONF_DRY_RUN = "dry_run"
 CONF_CLOCK_UPDATE = "clock_update"
 CONF_GLOBAL_ALARM = "global_alarm"
+CONF_LANG = "lang"
 CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
 CONF_PARTITION_ALARM_x = "partition_alarm_"
@@ -78,12 +79,17 @@ Model2PartitionsNum = {
 	"Kyo32G": 8,
 }
 
+SupportedLangs = (
+	"en",
+	"it",
+)
 
 CONFIG_SCHEMA = (
 	cv.Schema(
 		{
 			cv.GenerateID(): cv.declare_id(BentelKyo),
 			cv.Required(CONF_MODEL): cv.enum(text2AlarmModel),
+			cv.Optional(CONF_LANG, default="en"): cv.one_of(*SupportedLangs, lower=True),
 			cv.Optional(CONF_DRY_RUN, default="no"): cv.boolean,
 			cv.Optional(CONF_PARTITIONS_UPDATE_SKIP): cv.int_range(min=0, max=250),
 			cv.Optional(CONF_CLOCK_UPDATE): cv.Schema(
@@ -111,6 +117,10 @@ async def to_code(config):
 
 	if config.get(CONF_DRY_RUN):
 		cg.add_define("DRY_RUN")
+
+	match config.get(CONF_LANG):
+		case "it":
+			cg.add_define("LANG_IT")
 
 	var = cg.new_Pvariable(config[CONF_ID], config[CONF_MODEL], zones_num, partitions_num)
 	await cg.register_component(var, config)
