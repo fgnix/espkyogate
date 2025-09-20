@@ -15,6 +15,10 @@
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 
+#ifdef USE_TEXT_SENSOR
+#include "esphome/components/text_sensor/text_sensor.h"
+#endif
+
 
 
 namespace esphome {
@@ -58,6 +62,12 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		void set_zone_alarm_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
 		void set_zone_tamper_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
 
+		// Attach partition sensors
+		void set_partition_alarm_sensor(binary_sensor::BinarySensor *sensor, const uint8_t partition_id);
+#ifdef USE_TEXT_SENSOR
+		void set_partition_armed_text_sensor(text_sensor::TextSensor *sensor, const uint8_t partition_id);
+#endif
+
 
 	protected:
 		// Alarm type and options
@@ -77,6 +87,12 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		binary_sensor::BinarySensor *zone_bypassed_sensors_[MAX_ZONES];
 		binary_sensor::BinarySensor *zone_alarm_memory_sensors_[MAX_ZONES];
 		binary_sensor::BinarySensor *zone_tamper_memory_sensors_[MAX_ZONES];
+
+		// Partitions
+		binary_sensor::BinarySensor *partition_alarm_sensors_[MAX_PARTITIONS];
+#ifdef USE_TEXT_SENSOR
+		text_sensor::TextSensor *partition_armed_text_sensors_[MAX_PARTITIONS];
+#endif
 
 		/*
 		 * UART send and receive

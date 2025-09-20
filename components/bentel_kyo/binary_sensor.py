@@ -11,6 +11,7 @@ from esphome.const import (
 from . import (
 	MAX_ZONES,
 	MAX_PARTITIONS,
+	CONF_PARTITION_ALARM_x,
 	CONF_BENTEL_KYO_ID,
 	CONF_OPERATIONAL,
 	CONF_ZONE_x,
@@ -58,6 +59,15 @@ ZONES_CONFIG_SCHEMA = (
 	})
 )
 
+# Espand to all 8 partitions
+PARTITIONS_CONFIG_SCHEMA = cv.Schema(
+	{
+		cv.Optional(CONF_PARTITION_ALARM_x + str(i)): binary_sensor.binary_sensor_schema()
+		for i in range(1, MAX_PARTITIONS+1)
+	}
+)
+
+
 CONFIG_SCHEMA = (
 	cv.Schema(
 		{
@@ -69,6 +79,7 @@ CONFIG_SCHEMA = (
 		}
 	)
 	.extend(ZONES_CONFIG_SCHEMA)
+	.extend(PARTITIONS_CONFIG_SCHEMA)
 )
 
 
@@ -104,3 +115,9 @@ async def to_code(config):
 		if zone := config.get(CONF_ZONE_TAMPER_MEMORY_x + str(i)):
 			sens = await binary_sensor.new_binary_sensor(zone)
 			cg.add(parent.set_zone_tamper_memory_sensor(sens, i))
+
+	# Partitions
+	for i in range(1, MAX_PARTITIONS+1):
+		if partition := config.get(CONF_PARTITION_ALARM_x + str(i)):
+			sens = await binary_sensor.new_binary_sensor(partition)
+			cg.add(parent.set_partition_alarm_sensor(sens, i))

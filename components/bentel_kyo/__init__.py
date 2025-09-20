@@ -7,12 +7,14 @@ from esphome.const import CONF_ID
 DEPENDENCIES = ["uart"]
 MULTI_CONF = True
 
-MAX_ZONES = 32
 MAX_PARTITIONS = 8 # a.k.a Areas
+MAX_ZONES = 32
 
 CONF_BENTEL_KYO_ID = "bentel_kyo_id"
 CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
+CONF_PARTITION_ALARM_x = "partition_alarm_"
+CONF_PARTITION_ARMED_STATUS_x = "partition_armed_status_"
 CONF_ZONE_x = "zone_"
 CONF_ZONE_ALARM_MEMORY_x = "zone_alarm_memory_"
 CONF_ZONE_BYPASSED_x = "zone_bypassed_"
