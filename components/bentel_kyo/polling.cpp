@@ -56,6 +56,27 @@ void BentelKyo::polling_next_step() {
 			status = read_partitions_update();
 			this->polling_status_ = polling_fetch_next_step();
 			break;
+
+#ifdef USE_TIME
+		case PollingStatus::REQUEST_CLOCK_UPDATE:
+			next_timeout = request_clock_update();
+			status = true;
+			this->polling_status_ = PollingStatus::READ_CLOCK_UPDATE;
+			break;
+
+		case PollingStatus::READ_CLOCK_UPDATE:
+			status = read_clock_update();
+			this->polling_status_ = polling_fetch_next_step();
+
+			if (this->clock_update_interval_ != UINT32_MAX) {
+				cancel_timeout(CLOCK_UPDATE_HANDLER); // Cancel any pending timeout, if any
+				ESP_LOGI(TAG, "Scheduling next clock update in %u ms", this->clock_update_interval_);
+				set_timeout(CLOCK_UPDATE_HANDLER, this->clock_update_interval_, [this]() {
+					this->schedule_clock_update();
+				});
+			}
+			break;
+#endif
 	}
 
 	// Operation failed

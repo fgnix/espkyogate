@@ -21,6 +21,21 @@ namespace bentel_kyo {
 
 const std::string time_format = "%d/%m/%Y_%H:%M:%S";
 
+uint32_t BentelKyo::request_clock_update() {
+	if (this->rtc_ == nullptr) {
+		ESP_LOGW(TAG, "Unable to update clock. No real time clock provided");
+		return 0;
+	}
+
+	const ESPTime now = this->rtc_->now();
+	if (!now.is_valid()) {
+		ESP_LOGW(TAG, "Unable to update clock. Time not properly set");
+		return 0;
+	}
+
+	return request_clock_update(now);
+}
+
 uint32_t BentelKyo::request_clock_update(ESPTime time) {
 	const std::string time_str = time.strftime(time_format);
 	ESP_LOGD(TAG, "Updating clock to %s", time_str.c_str());

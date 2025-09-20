@@ -46,6 +46,15 @@ void BentelKyo::setup(){
 	// Enable main polling loop
 	ESP_LOGD(TAG, "Enable polling");
 	this->polling_status_ = PollingStatus::WAITING;
+
+	// Enable clock update if a time source is provided
+#ifdef USE_TIME
+	if (this->rtc_ != nullptr && this->clock_update_interval_ != UINT32_MAX) {
+		ESP_LOGD(TAG, "Enable clock update");
+		// Wait 2 minutes for the ESP to get the time from HA
+		set_timeout(CLOCK_UPDATE_HANDLER, 2 * 1000, [this]() { this->schedule_clock_update(); });
+	}
+#endif
 }
 
 void BentelKyo::update(){
@@ -64,15 +73,26 @@ void BentelKyo::dump_config(){
 	              "  max_zones: %i\n"
 	              "  max_partitions: %i\n"
 	              "  update_interval: %u\n"
-	              "  partitions_update_skip: %u",
+	              "  partitions_update_skip: %u"
+	              "  update clock interval: %u\n",
 	              this->model_,
 	              this->max_zones_,
 	              this->max_partitions_,
 	              this->update_interval_,
-	              this->partitions_update_skip_);
+	              this->partitions_update_skip_,
+	              this->clock_update_interval_);
 }
 
 void BentelKyo::set_partitions_update_skip(uint8_t skip) { this->partitions_update_skip_ = skip; }
+
+#ifdef USE_TIME
+void BentelKyo::set_real_time_clock(time::RealTimeClock *rtc) { this->rtc_ = rtc; }
+void BentelKyo::set_clock_update_interval(uint32_t interval_ms) { this->clock_update_interval_ = interval_ms; }
+void BentelKyo::schedule_clock_update() {
+	ESP_LOGI(TAG, "Scheduling clock update on next polling loop");
+	this->polling_steps_scheduled_.push(PollingStatus::REQUEST_CLOCK_UPDATE);
+}
+#endif
 
 void BentelKyo::set_zone_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id) {
 	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1

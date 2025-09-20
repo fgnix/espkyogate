@@ -21,6 +21,7 @@
 
 #ifdef USE_TIME
 #include "esphome/core/time.h"
+#include "esphome/components/time/real_time_clock.h"
 #endif
 
 
@@ -34,6 +35,7 @@ static const uint8_t MAX_ZONES = 32;
 static const uint8_t MAX_PARTITIONS = 8; // (a.k.a. Areas)
 
 static const char *const POLLING_HANDLER = "polling_handler";
+static const char *const CLOCK_UPDATE_HANDLER = "clock_update_handler";
 
 namespace partitions_arm_mode {
 	static const char *const NO_CHANGE = "No change";
@@ -73,6 +75,8 @@ enum class PollingStatus {
 	READ_STATUS_UPDATE = 3,
 	REQUEST_PARTITIONS_UPDATE = 4,
 	READ_PARTITIONS_UPDATE = 5,
+	REQUEST_CLOCK_UPDATE = 6,
+	READ_CLOCK_UPDATE = 7,
 };
 
 
@@ -106,6 +110,13 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		void update() override;
 		void dump_config() override;
 		float get_setup_priority() const override { return setup_priority::DATA; };
+
+		// Clock
+#ifdef USE_TIME
+		void set_real_time_clock(time::RealTimeClock *rtc);
+		void set_clock_update_interval(uint32_t interval_ms);
+		void schedule_clock_update();
+#endif
 
 		// Configuration options
 		void set_partitions_update_skip(uint8_t skip);
@@ -147,6 +158,12 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		uint8_t partitions_update_skip_ = 0;
 		uint8_t polling_exec_count_ = 0;
 
+		// Clock update
+#ifdef USE_TIME
+		time::RealTimeClock *rtc_ = nullptr; // If this is set; Time update is enabled
+		uint32_t clock_update_interval_; // Interval in ms
+#endif
+
 		// Zones
 		binary_sensor::BinarySensor *zone_sensors_[MAX_ZONES];
 		binary_sensor::BinarySensor *zone_tamper_sensors_[MAX_ZONES];
@@ -180,6 +197,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		bool read_partitions_update();
 		bool read_simple_ack(const uint8_t *cmd, const uint8_t len);
 #ifdef USE_TIME
+		uint32_t request_clock_update();
 		uint32_t request_clock_update(ESPTime time);
 		bool read_clock_update();
 #endif

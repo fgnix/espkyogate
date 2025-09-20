@@ -1,8 +1,9 @@
 import esphome.config_validation as cv
 import esphome.codegen as cg
 from esphome.components import uart
+from esphome.components import time
 
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_UPDATE_INTERVAL
 
 DEPENDENCIES = ["uart"]
 MULTI_CONF = True
@@ -12,12 +13,14 @@ MAX_ZONES = 32
 
 CONF_BENTEL_KYO_ID = "bentel_kyo_id"
 CONF_DRY_RUN = "dry_run"
+CONF_CLOCK_UPDATE = "clock_update"
 CONF_GLOBAL_ALARM = "global_alarm"
 CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
 CONF_PARTITION_ALARM_x = "partition_alarm_"
 CONF_PARTITION_ARMED_STATUS_x = "partition_armed_status_"
 CONF_PARTITIONS_UPDATE_SKIP = "partitions_update_skip"
+CONF_REAL_TIME_CLOCK_ID = "real_time_clock_id"
 CONF_TAMPER_ZONE = "tamper_zone"
 CONF_TAMPER_FAKE_KEY = "tamper_fake_key"
 CONF_TAMPER_BPI = "tamper_bpi"
@@ -79,6 +82,12 @@ CONFIG_SCHEMA = (
 			cv.Required(CONF_MODEL): cv.enum(text2AlarmModel),
 			cv.Optional(CONF_DRY_RUN, default="no"): cv.boolean,
 			cv.Optional(CONF_PARTITIONS_UPDATE_SKIP): cv.int_range(min=0, max=250),
+			cv.Optional(CONF_CLOCK_UPDATE): cv.Schema(
+				{
+					cv.Required(CONF_REAL_TIME_CLOCK_ID): cv.use_id(time.RealTimeClock),
+					cv.Optional(CONF_UPDATE_INTERVAL, default="1days"): cv.update_interval,
+				}
+			),
 		}
 	)
 	.extend(cv.polling_component_schema("10s"))
@@ -98,3 +107,9 @@ async def to_code(config):
 
 	if partitions_update_skip := config.get(CONF_PARTITIONS_UPDATE_SKIP):
 		cg.add(var.set_partitions_update_skip(partitions_update_skip))
+
+	# Clock update section
+	if clock_update_config := config.get(CONF_CLOCK_UPDATE):
+		rtc = await cg.get_variable(clock_update_config[CONF_REAL_TIME_CLOCK_ID])
+		cg.add(var.set_real_time_clock(rtc))
+		cg.add(var.set_clock_update_interval(clock_update_config[CONF_UPDATE_INTERVAL]))
