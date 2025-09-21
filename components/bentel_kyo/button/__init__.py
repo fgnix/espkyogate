@@ -14,6 +14,8 @@ from .. import (
 	CONF_PARTITIONS_ARM_COMMIT,
 	CONF_ALL_ALARMS_RESET,
 	CONF_CLOCK_UPDATE,
+	CONF_ZONES_BYPASS_COMMIT,
+	CONF_ZONES_BYPASS_RESET,
 	bentel_kyo_ns,
 	BentelKyo,
 )
@@ -23,6 +25,8 @@ DEPENDENCIES = ["bentel_kyo"]
 PartitionsArmCommitButton = bentel_kyo_ns.class_("PartitionsArmCommitButton", button.Button)
 ClockUpdateButton = bentel_kyo_ns.class_("ClockUpdateButton", button.Button)
 AllAlarmsResetButton = bentel_kyo_ns.class_("AllAlarmsResetButton", button.Button)
+ZonesBypassCommitButton = bentel_kyo_ns.class_("ZonesBypassCommitButton", button.Button)
+ZonesBypassResetButton = bentel_kyo_ns.class_("ZonesBypassResetButton", button.Button)
 
 CONFIG_SCHEMA = cv.Schema(
 	{
@@ -38,6 +42,14 @@ CONFIG_SCHEMA = cv.Schema(
 		),
 		cv.Optional(CONF_ALL_ALARMS_RESET): button.button_schema(
 			AllAlarmsResetButton,
+			icon="mdi:alarm-light-off",
+		),
+		cv.Optional(CONF_ZONES_BYPASS_COMMIT): button.button_schema(
+			ZonesBypassCommitButton,
+			icon="mdi:alarm-light-off",
+		),
+		cv.Optional(CONF_ZONES_BYPASS_RESET): button.button_schema(
+			ZonesBypassResetButton,
 			icon="mdi:alarm-light-off",
 		),
 	}
@@ -60,3 +72,13 @@ async def to_code(config):
 		btn = await button.new_button(all_alarms_reset)
 		await cg.register_parented(btn, parent)
 		cg.add(parent.set_all_alarms_reset_button(btn))
+
+	if zones_bypass_commit := config.get(CONF_ZONES_BYPASS_COMMIT):
+		btn = await button.new_button(zones_bypass_commit)
+		await cg.register_parented(btn, parent)
+		cg.add(parent.set_zones_bypass_commit_button(btn))
+
+	if zones_bypass_reset := config.get(CONF_ZONES_BYPASS_RESET):
+		btn = await button.new_button(zones_bypass_reset)
+		await cg.register_parented(btn, parent)
+		cg.add(parent.set_zones_bypass_reset_button(btn))

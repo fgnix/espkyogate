@@ -26,6 +26,9 @@ BentelKyo::BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions
 		this->zone_bypassed_sensors_[i] = nullptr;
 		this->zone_alarm_memory_sensors_[i] = nullptr;
 		this->zone_tamper_memory_sensors_[i] = nullptr;
+#ifdef USE_SWITCH
+		this->zone_bypass_switch_[i] = nullptr;
+#endif
 	}
 	for (int i = 0; i < MAX_PARTITIONS; i++) {
 		this->partition_alarm_sensors_[i] = nullptr;
@@ -178,6 +181,24 @@ void BentelKyo::set_zone_tamper_memory_sensor(binary_sensor::BinarySensor *senso
 	if (zone_num >= this->used_zones_)
 		this->used_zones_ = zone_num + 1;
 }
+
+#ifdef USE_SWITCH
+void BentelKyo::set_zone_bypass_switch(switch_::Switch *switch_, const uint8_t zone_id) {
+	const uint8_t zone_num = zone_id - 1; // On YAML config Zone ID starts from 1
+	if (zone_num >= this->max_zones_) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_bypass_switch. Only %u zones are supported",
+		         zone_id, this->max_zones_);
+		return;
+	}
+	if (this->zone_bypass_switch_[zone_num] != nullptr) {
+		ESP_LOGE(TAG, "Zone ID %u: Unable to set zone_bypass_switch. Already set", zone_id);
+		return;
+	}
+	this->zone_bypass_switch_[zone_num] = switch_;
+	if (zone_num >= this->used_zones_)
+		this->used_zones_ = zone_num + 1;
+}
+#endif
 
 void BentelKyo::set_partition_alarm_sensor(binary_sensor::BinarySensor *sensor, const uint8_t partition_id) {
 	const uint8_t partition_num = partition_id - 1; // On YAML config Partition ID starts from 1

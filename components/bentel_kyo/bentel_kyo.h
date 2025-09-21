@@ -33,6 +33,10 @@
 #include "esphome/components/select/select.h"
 #endif
 
+#ifdef USE_SWITCH
+#include "esphome/components/switch/switch.h"
+#endif
+
 
 namespace esphome {
 namespace bentel_kyo {
@@ -139,6 +143,10 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 #ifdef USE_SELECT
 	SUB_BUTTON(paritions_arm_commit)
 #endif
+#ifdef USE_SWITCH
+	SUB_BUTTON(zones_bypass_commit)
+	SUB_BUTTON(zones_bypass_reset)
+#endif
 #endif
 
 	public:
@@ -177,6 +185,9 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		void set_zone_bypassed_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
 		void set_zone_alarm_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
 		void set_zone_tamper_memory_sensor(binary_sensor::BinarySensor *sensor, const uint8_t zone_id);
+#ifdef USE_SWITCH
+		void set_zone_bypass_switch(switch_::Switch *switch_, const uint8_t zone_id);
+#endif
 
 		// Attach partition sensors
 		void set_partition_alarm_sensor(binary_sensor::BinarySensor *sensor, const uint8_t partition_id);
@@ -249,6 +260,9 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		binary_sensor::BinarySensor *zone_bypassed_sensors_[MAX_ZONES];
 		binary_sensor::BinarySensor *zone_alarm_memory_sensors_[MAX_ZONES];
 		binary_sensor::BinarySensor *zone_tamper_memory_sensors_[MAX_ZONES];
+#ifdef USE_SWITCH
+		switch_::Switch *zone_bypass_switch_[MAX_ZONES];
+#endif
 
 		// Partitions
 		binary_sensor::BinarySensor *partition_alarm_sensors_[MAX_PARTITIONS];
