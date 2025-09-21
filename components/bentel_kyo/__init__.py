@@ -22,6 +22,8 @@ CONF_MODEL = "model"
 CONF_OPERATIONAL = "operational"
 CONF_PARTITION_x = "partition_"
 CONF_PARTITION_ALARM_x = "partition_alarm_"
+CONF_PARTITION_ARM_x = "partition_arm_"
+CONF_PARTITIONS_ARM_COMMIT = "partitions_arm_commit"
 CONF_PARTITION_ARMED_STATUS_x = "partition_armed_status_"
 CONF_PARTITIONS_UPDATE_SKIP = "partitions_update_skip"
 CONF_REAL_TIME_CLOCK_ID = "real_time_clock_id"
@@ -97,6 +99,23 @@ text2PartitionsArmMode = {
 	"stay_0_delay": PartitionsArmMode.STAY_0_DELAY,
 	"disarm": PartitionsArmMode.DISARM,
 };
+
+CONF_SELECTS_PARTITION_ARMED_MODES = {
+	"it": [
+		"No change",
+		"Inserisci",
+		"Parziale",
+		"Parziale 0 ritardo",
+		"Disinserici",
+	],
+	"en": [
+		"No change",
+		"Away",
+		"Stay",
+		"Stay 0 delay",
+		"Disarm",
+	],
+}
 
 CONFIG_SCHEMA = (
 	cv.Schema(

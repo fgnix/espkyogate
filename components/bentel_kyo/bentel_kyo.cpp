@@ -32,12 +32,22 @@ BentelKyo::BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions
 #ifdef USE_TEXT_SENSOR
 		this->partition_armed_text_sensors_[i] = nullptr;
 #endif
+#ifdef USE_SELECT
+		this->partition_arm_selects_[i] = nullptr;
+#endif
 	}
 }
 
 void BentelKyo::setup(){
 	if (this->operational_binary_sensor_ != nullptr)
 		this->operational_binary_sensor_->publish_state(false);
+#ifdef USE_SELECT
+	for (int i = 0; i < this->used_partitions_; i++) {
+		if (this->partition_arm_selects_[i] != nullptr) {
+			this->partition_arm_selects_[i]->publish_state(partitions_arm_mode::NO_CHANGE);
+		}
+	}
+#endif
 	if (this->model_ == AlarmModel::UNKNOWN) {
 		ESP_LOGE(TAG, "Alarm model not set. Do not start polling");
 		return;
@@ -197,6 +207,23 @@ void BentelKyo::set_partition_armed_text_sensor(text_sensor::TextSensor *sensor,
 		return;
 	}
 	this->partition_armed_text_sensors_[partition_num] = sensor;
+	if (partition_num >= this->used_partitions_)
+		this->used_partitions_ = partition_num + 1;
+}
+#endif
+#ifdef USE_SELECT
+void BentelKyo::set_partition_arm_select(select::Select *select, const uint8_t partition_id) {
+	const uint8_t partition_num = partition_id - 1; // On YAML config Partition ID starts from 1
+	if (partition_num >= this->max_partitions_) {
+		ESP_LOGE(TAG, "Partition ID %u: Unable to set partition_arm_select. Only %u partitions are supported",
+		         partition_id, this->max_partitions_);
+		return;
+	}
+	if (this->partition_arm_selects_[partition_num] != nullptr) {
+		ESP_LOGE(TAG, "Partition ID %u: Unable to set partition_arm_select. Already set", partition_id);
+		return;
+	}
+	this->partition_arm_selects_[partition_num] = select;
 	if (partition_num >= this->used_partitions_)
 		this->used_partitions_ = partition_num + 1;
 }

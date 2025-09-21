@@ -108,6 +108,13 @@ void BentelKyo::partitions_arm_uncommited_reset() {
 	this->partitions_arm_uncommitted_stay_ = 0;
 	this->partitions_arm_uncommitted_stay_0_delay_ = 0;
 	this->partitions_arm_uncommitted_disarm_ = 0;
+#ifdef USE_SELECT
+	for (int i = 0; i < this->used_partitions_; i++) {
+		if (this->partition_arm_selects_[i] != nullptr) {
+			this->partition_arm_selects_[i]->publish_state(partitions_arm_mode::NO_CHANGE);
+		}
+	}
+#endif
 }
 
 bool BentelKyo::request_partitions_arm_edit(uint32_t &expected_response_time) {

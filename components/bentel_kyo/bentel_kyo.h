@@ -29,6 +29,9 @@
 #include "esphome/components/time/real_time_clock.h"
 #endif
 
+#ifdef USE_SELECT
+#include "esphome/components/select/select.h"
+#endif
 
 
 namespace esphome {
@@ -130,6 +133,9 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 	SUB_BUTTON(clock_update)
 #endif
 	SUB_BUTTON(all_alarms_reset)
+#ifdef USE_SELECT
+	SUB_BUTTON(paritions_arm_commit)
+#endif
 #endif
 
 	public:
@@ -170,6 +176,9 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		void set_partition_alarm_sensor(binary_sensor::BinarySensor *sensor, const uint8_t partition_id);
 #ifdef USE_TEXT_SENSOR
 		void set_partition_armed_text_sensor(text_sensor::TextSensor *sensor, const uint8_t partition_id);
+#endif
+#ifdef USE_SELECT
+		void set_partition_arm_select(select::Select *select, const uint8_t partition_id);
 #endif
 
 
@@ -231,6 +240,9 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		binary_sensor::BinarySensor *partition_alarm_sensors_[MAX_PARTITIONS];
 #ifdef USE_TEXT_SENSOR
 		text_sensor::TextSensor *partition_armed_text_sensors_[MAX_PARTITIONS];
+#endif
+#ifdef USE_SELECT
+		select::Select *partition_arm_selects_[MAX_PARTITIONS];
 #endif
 
 		// Change partitions and zones settings
