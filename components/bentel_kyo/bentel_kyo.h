@@ -19,6 +19,9 @@
 #include "esphome/components/text_sensor/text_sensor.h"
 #endif
 
+#ifdef USE_TIME
+#include "esphome/core/time.h"
+#endif
 
 
 namespace esphome {
@@ -176,6 +179,10 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		uint32_t request_partitions_update();
 		bool read_partitions_update();
 		bool read_simple_ack(const uint8_t *cmd, const uint8_t len);
+#ifdef USE_TIME
+		uint32_t request_clock_update(ESPTime time);
+		bool read_clock_update();
+#endif
 
 		/*
 		 * Parse UART responses
