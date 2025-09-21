@@ -1,3 +1,4 @@
+from esphome import automation
 import esphome.config_validation as cv
 import esphome.codegen as cg
 from esphome.components import uart
@@ -43,6 +44,7 @@ CONF_ZONE_TAMPER_MEMORY_x = "zone_tamper_memory_"
 bentel_kyo_ns = cg.esphome_ns.namespace("bentel_kyo")
 AlarmModel = bentel_kyo_ns.enum("AlarmModel", is_class=True)
 BentelKyo = bentel_kyo_ns.class_("BentelKyo", cg.PollingComponent, uart.UARTDevice)
+ClockUpdateAction = bentel_kyo_ns.class_("ClockUpdateAction", automation.Action)
 
 text2AlarmModel = {
 	"Kyo4": AlarmModel.KYO_4,
@@ -94,6 +96,13 @@ CONFIG_SCHEMA = (
     .extend(uart.UART_DEVICE_SCHEMA)
 )
 
+# Actions schema
+SIMPLE_ACTION_SCHEMA = automation.maybe_simple_id(
+	{
+		cv.Required(CONF_BENTEL_KYO_ID): cv.use_id(BentelKyo),
+	}
+)
+
 async def to_code(config):
 	zones_num = Model2ZonesNum[config[CONF_MODEL]]
 	partitions_num = Model2PartitionsNum[config[CONF_MODEL]]
@@ -113,3 +122,13 @@ async def to_code(config):
 		rtc = await cg.get_variable(clock_update_config[CONF_REAL_TIME_CLOCK_ID])
 		cg.add(var.set_real_time_clock(rtc))
 		cg.add(var.set_clock_update_interval(clock_update_config[CONF_UPDATE_INTERVAL]))
+
+
+@automation.register_action(
+	"bentel_kyo.clock_update",
+	ClockUpdateAction,
+	SIMPLE_ACTION_SCHEMA,
+)
+async def bentel_kyo_action_to_code(config, action_id, template_arg, args):
+	paren = await cg.get_variable(config[CONF_BENTEL_KYO_ID])
+	return cg.new_Pvariable(action_id, template_arg, paren)

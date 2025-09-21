@@ -12,6 +12,7 @@
 */
 
 #pragma once
+#include "esphome/core/automation.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 
