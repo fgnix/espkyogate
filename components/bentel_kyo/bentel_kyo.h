@@ -115,6 +115,25 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 
 
 		/*
+		 * Send serial request and parse serial response
+		 */
+		bool match_cmd_in_response(const uint8_t cmd[], const size_t cmd_len, const uint8_t rx_buf[],
+		                           const size_t rx_len) const;
+		uint32_t request_status_update();
+		bool read_status_update();
+
+		/*
+		 * Parse UART responses
+		 * Kyo 4 and Kyo 8 (no G / W / GW) use shorter reponses.
+		 *
+		 * parse_short are for Kyo 4 and Kyo 8 (only)
+		 * parse_long methods are for the other models
+		 *
+		 */
+		bool parse_long_status_update(const uint8_t buf[], const size_t len);
+		bool parse_short_status_update(const uint8_t buf[], const size_t len);
+
+		/*
 		 * UART send and receive
 		 */
 		void write_UART(const uint8_t *const data, const size_t data_len);
