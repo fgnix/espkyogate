@@ -292,6 +292,17 @@ bool BentelKyo::parse_long_partitions_update(const uint8_t buf[], const size_t l
 	bool status, status_A, status_S, status_I, status_D;
 	std::string text_status;
 
+	/* Save partitions armed status. Needed if the user request a status change
+	 *   bit 24-31 armed away
+	 *   bit 16-23 armed stay
+	 *   bit 8-15  armed stay with 0 delay
+	 *   bit 0-7   disarmed  */
+	this->partitions_armed_status_ = 0;
+	this->partitions_armed_status_ |= (buf[6] << 24);
+	this->partitions_armed_status_ |= (buf[7] << 16);
+	this->partitions_armed_status_ |= (buf[8] << 8);
+	this->partitions_armed_status_ |= (buf[9] << 0);
+
 #ifdef USE_TEXT_SENSOR
 	// Read partition armed status
 	for (i = 0; i < this->used_partitions_; i++) {

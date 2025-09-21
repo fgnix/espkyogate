@@ -34,6 +34,7 @@
 namespace esphome {
 namespace bentel_kyo {
 
+static const uint32_t AUTO_RESET_UNCOMMITTED_INTERVAL = 20 * 60 * 1000; // 20 minutes [in ms]
 static const size_t RX_BUF_STD_SIZE = 255;
 static const char *const TAG = "bentel_kyo";
 
@@ -42,6 +43,8 @@ static const uint8_t MAX_PARTITIONS = 8; // (a.k.a. Areas)
 
 static const char *const POLLING_HANDLER = "polling_handler";
 static const char *const CLOCK_UPDATE_HANDLER = "clock_update_handler";
+
+static const char *const PARTITIONS_ARM_UNCOMMITTED_RESET_HANDLER = "partitions_arm_uncommitted_reset_handler";
 
 namespace partitions_arm_mode {
 	static const char *const NO_CHANGE = "No change";
@@ -72,6 +75,16 @@ enum class AlarmModel {
 	KYO_8GW = 5,
 	KYO_32 = 6,
 	KYO_32G = 7,
+};
+
+enum class PartitionsArmMode {
+	NO_CHANGE = 0,
+	AWAY = 1,
+	STAY = 2,
+	STAY_0_DELAY = 3,
+	DISARM = 4,
+
+	UNKNOWN = 99,
 };
 
 enum class PollingStatus {
@@ -133,6 +146,10 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		void schedule_clock_update();
 #endif
 
+		// Change partitions and zones settings
+		void partition_arm_edit(const uint8_t partition_id, const PartitionsArmMode mode);
+		void partitions_arm_uncommited_reset();
+
 		// Schedule command for execution in next polling
 		void schedule_all_alarms_reset();
 
@@ -176,6 +193,24 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		uint8_t partitions_update_skip_ = 0;
 		uint8_t polling_exec_count_ = 0;
 
+		/*
+		 * partitions_arm_*_ contains the changes requested by the user but not committed yet
+		 *
+		 * Partition 1 is the LSB of each 8 bit block
+		 * Partition 8 is the MSB of each 8 bit block
+		 *
+		 * partitions_arm_current_status: raw status bit.
+		 *   bit 24-31 armed away
+		 *   bit 16-23 armed stay
+		 *   bit 8-15  armed stay with 0 delay
+		 *   bit 0-7   disarmed
+		 */
+		uint32_t partitions_armed_status_ = 0;
+		uint8_t partitions_arm_uncommitted_away_ = 0;
+		uint8_t partitions_arm_uncommitted_stay_ = 0;
+		uint8_t partitions_arm_uncommitted_stay_0_delay_ = 0;
+		uint8_t partitions_arm_uncommitted_disarm_ = 0;
+
 		// Clock update
 #ifdef USE_TIME
 		time::RealTimeClock *rtc_ = nullptr; // If this is set; Time update is enabled
@@ -195,6 +230,8 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		text_sensor::TextSensor *partition_armed_text_sensors_[MAX_PARTITIONS];
 #endif
 
+		// Change partitions and zones settings
+		uint32_t compute_new_partitions_armed_status() const;
 
 		/*
 		 * Handle polling stages
