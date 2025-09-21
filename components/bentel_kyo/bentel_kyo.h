@@ -16,6 +16,10 @@
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 
+#ifdef USE_BUTTON
+#include "esphome/components/button/button.h"
+#endif
+
 #ifdef USE_TEXT_SENSOR
 #include "esphome/components/text_sensor/text_sensor.h"
 #endif
@@ -24,6 +28,7 @@
 #include "esphome/core/time.h"
 #include "esphome/components/time/real_time_clock.h"
 #endif
+
 
 
 namespace esphome {
@@ -102,6 +107,12 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 	SUB_BINARY_SENSOR(tamper_jam)
 	SUB_BINARY_SENSOR(tamper_wireless)
 
+	// Buttons
+#ifdef USE_BUTTON
+#ifdef USE_TIME
+	SUB_BUTTON(clock_update)
+#endif
+#endif
 
 	public:
 		BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions);
