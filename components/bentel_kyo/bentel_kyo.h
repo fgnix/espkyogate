@@ -48,6 +48,7 @@ static const char *const POLLING_HANDLER = "polling_handler";
 static const char *const CLOCK_UPDATE_HANDLER = "clock_update_handler";
 
 static const char *const PARTITIONS_ARM_UNCOMMITTED_RESET_HANDLER = "partitions_arm_uncommitted_reset_handler";
+static const char *const ZONES_BYPASS_UNCOMMITTED_RESET_HANDLER = "zones_bypass_uncommitted_reset_handler";
 
 namespace partitions_arm_mode {
 	static const char *const NO_CHANGE = "No change";
@@ -157,6 +158,8 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		// Change partitions and zones settings
 		void partition_arm_edit(const uint8_t partition_id, const PartitionsArmMode mode);
 		void partitions_arm_uncommited_reset();
+		void zone_bypass(const uint8_t zone_id, const bool bypass);
+		void zones_bypass_uncommited_reset();
 
 		// Schedule command for execution in next polling
 		void schedule_all_alarms_reset();
@@ -222,6 +225,14 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		uint8_t partitions_arm_uncommitted_stay_ = 0;
 		uint8_t partitions_arm_uncommitted_stay_0_delay_ = 0;
 		uint8_t partitions_arm_uncommitted_disarm_ = 0;
+		/*
+		 * This variable contains the change requested by the user but not yet committed
+		 *
+		 * Zone 1 is the LSB
+		 * Zone 32 is the MSB
+		 */
+		uint32_t zone_uncommitted_bypass_enable_ = 0;
+		uint32_t zone_uncommitted_bypass_disable_ = 0;
 
 		// Clock update
 #ifdef USE_TIME
