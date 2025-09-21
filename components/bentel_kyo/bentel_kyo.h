@@ -30,6 +30,8 @@ static const char *const TAG = "bentel_kyo";
 static const uint8_t MAX_ZONES = 32;
 static const uint8_t MAX_PARTITIONS = 8; // (a.k.a. Areas)
 
+static const char *const POLLING_HANDLER = "polling_handler";
+
 namespace partitions_arm_mode {
 	static const char *const NO_CHANGE = "No change";
 #ifdef LANG_IT
@@ -59,6 +61,15 @@ enum class AlarmModel {
 	KYO_8GW = 5,
 	KYO_32 = 6,
 	KYO_32G = 7,
+};
+
+enum class PollingStatus {
+	NOT_RUNNING = 0,
+	WAITING = 1,
+	REQUEST_STATUS_UPDATE = 2,
+	READ_STATUS_UPDATE = 3,
+	REQUEST_PARTITIONS_UPDATE = 4,
+	READ_PARTITIONS_UPDATE = 5,
 };
 
 
@@ -122,6 +133,10 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		uint8_t used_partitions_ = 0;
 		uint8_t used_zones_ = 0;
 
+		// State machine status for polling updates
+		PollingStatus polling_status_ = PollingStatus::NOT_RUNNING;
+		bool polling_loop_error_; // True if an error occurred during the polling loop
+		uint8_t polling_error_count_ = 0;
 		// How may time skip the partition update.
 		//   0 => update partition every status update
 		//   1 => skip 1 time. Update partition every 2 status update
@@ -141,6 +156,13 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		text_sensor::TextSensor *partition_armed_text_sensors_[MAX_PARTITIONS];
 #endif
 
+
+		/*
+		 * Handle polling stages
+		 */
+		void polling_run();
+		void polling_next_step();
+		void polling_force_partitions_update();
 
 		/*
 		 * Send serial request and parse serial response

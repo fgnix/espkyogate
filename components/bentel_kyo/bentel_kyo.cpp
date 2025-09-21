@@ -38,10 +38,23 @@ BentelKyo::BentelKyo(AlarmModel model, uint8_t max_zones, uint8_t max_partitions
 void BentelKyo::setup(){
 	if (this->operational_binary_sensor_ != nullptr)
 		this->operational_binary_sensor_->publish_state(false);
+	if (this->model_ == AlarmModel::UNKNOWN) {
+		ESP_LOGE(TAG, "Alarm model not set. Do not start polling");
+		return;
+	}
+
+	// Enable main polling loop
+	ESP_LOGD(TAG, "Enable polling");
+	this->polling_status_ = PollingStatus::WAITING;
 }
 
 void BentelKyo::update(){
+	if (this->polling_status_ == PollingStatus::NOT_RUNNING) {
+		ESP_LOGD(TAG, "Polling not running. SKIP");
+		return;
+	}
 
+	polling_run();
 }
 
 void BentelKyo::dump_config(){
@@ -50,10 +63,12 @@ void BentelKyo::dump_config(){
 	              "  model: %i\n"
 	              "  max_zones: %i\n"
 	              "  max_partitions: %i\n"
+	              "  update_interval: %u\n"
 	              "  partitions_update_skip: %u",
 	              this->model_,
 	              this->max_zones_,
 	              this->max_partitions_,
+	              this->update_interval_,
 	              this->partitions_update_skip_);
 }
 
