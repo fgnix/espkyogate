@@ -11,6 +11,7 @@ from .. import (
 	MAX_ZONES,
 	MAX_PARTITIONS,
 	CONF_BENTEL_KYO_ID,
+	CONF_ALL_ALARMS_RESET,
 	CONF_CLOCK_UPDATE,
 	bentel_kyo_ns,
 	BentelKyo,
@@ -19,6 +20,7 @@ from .. import (
 DEPENDENCIES = ["bentel_kyo"]
 
 ClockUpdateButton = bentel_kyo_ns.class_("ClockUpdateButton", button.Button)
+AllAlarmsResetButton = bentel_kyo_ns.class_("AllAlarmsResetButton", button.Button)
 
 CONFIG_SCHEMA = cv.Schema(
 	{
@@ -27,6 +29,10 @@ CONFIG_SCHEMA = cv.Schema(
 			ClockUpdateButton,
 			icon="mdi:clock",
 			entity_category=ENTITY_CATEGORY_CONFIG,
+		),
+		cv.Optional(CONF_ALL_ALARMS_RESET): button.button_schema(
+			AllAlarmsResetButton,
+			icon="mdi:alarm-light-off",
 		),
 	}
 )
@@ -38,3 +44,8 @@ async def to_code(config):
 		btn = await button.new_button(clock_update)
 		await cg.register_parented(btn, parent)
 		cg.add(parent.set_clock_update_button(btn))
+
+	if all_alarms_reset := config.get(CONF_ALL_ALARMS_RESET):
+		btn = await button.new_button(all_alarms_reset)
+		await cg.register_parented(btn, parent)
+		cg.add(parent.set_all_alarms_reset_button(btn))

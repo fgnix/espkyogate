@@ -114,6 +114,7 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 #ifdef USE_TIME
 	SUB_BUTTON(clock_update)
 #endif
+	SUB_BUTTON(all_alarms_reset)
 #endif
 
 	public:

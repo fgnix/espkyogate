@@ -24,5 +24,11 @@ template<typename... Ts>
 void ClockUpdateAction<Ts...>::play(Ts... x) { this->bentel_kyo_->schedule_clock_update(); }
 #endif
 
+template<typename... Ts>
+AllAlarmsResetAction<Ts...>::AllAlarmsResetAction(BentelKyo *component): bentel_kyo_(component) {}
+
+template<typename... Ts>
+void AllAlarmsResetAction<Ts...>::play(Ts... x) { this->bentel_kyo_->schedule_all_alarms_reset(); }
+
 } // namespace bentel_kyo
 } // namespace esphome

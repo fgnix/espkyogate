@@ -12,6 +12,7 @@ MULTI_CONF = True
 MAX_PARTITIONS = 8 # a.k.a Areas
 MAX_ZONES = 32
 
+CONF_ALL_ALARMS_RESET = "all_alarms_reset"
 CONF_BENTEL_KYO_ID = "bentel_kyo_id"
 CONF_DRY_RUN = "dry_run"
 CONF_CLOCK_UPDATE = "clock_update"
@@ -45,6 +46,7 @@ bentel_kyo_ns = cg.esphome_ns.namespace("bentel_kyo")
 AlarmModel = bentel_kyo_ns.enum("AlarmModel", is_class=True)
 BentelKyo = bentel_kyo_ns.class_("BentelKyo", cg.PollingComponent, uart.UARTDevice)
 ClockUpdateAction = bentel_kyo_ns.class_("ClockUpdateAction", automation.Action)
+AllAlarmsResetAction = bentel_kyo_ns.class_("AllAlarmsResetAction", automation.Action)
 
 text2AlarmModel = {
 	"Kyo4": AlarmModel.KYO_4,
@@ -127,6 +129,11 @@ async def to_code(config):
 @automation.register_action(
 	"bentel_kyo.clock_update",
 	ClockUpdateAction,
+	SIMPLE_ACTION_SCHEMA,
+)
+@automation.register_action(
+	"bentel_kyo.all_alarms_reset",
+	AllAlarmsResetAction,
 	SIMPLE_ACTION_SCHEMA,
 )
 async def bentel_kyo_action_to_code(config, action_id, template_arg, args):

@@ -30,5 +30,15 @@ template<typename... Ts> class ClockUpdateAction : public Action<Ts...> {
 template class ClockUpdateAction<>;
 #endif
 
+template<typename... Ts> class AllAlarmsResetAction : public Action<Ts...> {
+	public:
+		AllAlarmsResetAction(BentelKyo *component);
+		void play(Ts... x) override;
+
+	protected:
+		BentelKyo *bentel_kyo_;
+};
+template class AllAlarmsResetAction<>;
+
 } // namespace bentel_kyo
 } // namespace esphome
