@@ -25,6 +25,7 @@ namespace command {
 	const uint8_t getPartitionsStatus[6] = {0xf0, 0x02, 0x15, 0x12, 0x00, 0x19};
 
 	const uint8_t updateClock[6] = {0x0f, 0x03, 0xf0, 0x05, 0x00, 0x07};
+	const uint8_t resetAlarms[6] = {0x0F, 0x05, 0xF0, 0x01, 0x00, 0x05};
 
 } // namespace command
 
@@ -34,6 +35,7 @@ namespace response_length {
 	const uint8_t getStatus = 18;
 	const uint8_t getPartitionsStatus = 26;
 	const uint8_t updateClock = 6;
+	const uint8_t resetAlarms = 6;
 
 } // namespace response_length
 
@@ -45,6 +47,7 @@ namespace command_response_time {
 	const uint32_t getStatus = 100;
 	const uint32_t getPartitionsStatus = 100;
 	const uint32_t updateClock = 300;
+	const uint8_t resetAlarms = 250;
 
 }
 

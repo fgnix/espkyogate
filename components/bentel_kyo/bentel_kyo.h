@@ -213,6 +213,8 @@ class BentelKyo : public PollingComponent, public uart::UARTDevice {
 		uint32_t request_clock_update(ESPTime time);
 		bool read_clock_update();
 #endif
+		uint32_t request_all_alarms_reset();
+		bool read_all_alarms_reset();
 
 		/*
 		 * Parse UART responses
